@@ -10,7 +10,7 @@ password = 'Inda1234'
 connection = oracledb.connect(user=username, password=password, host='192.168.1.200', port=1525, service_name=service_name)
 cursor = connection.cursor()
 
-
+# create function base on sqllineage lib to get source and target table from procedure
 def sql_for_track_lineage(procedure_name, schema_name):
     query_statement = """
     SELECT TEXT
