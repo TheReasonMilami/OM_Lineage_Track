@@ -1,7 +1,6 @@
 import os
-
 from metadata.generated.schema.type.customProperties.complexTypes import EntityReference
-from create_database_service import connectOM
+from connect_OM import connectOM
 from metadata.generated.schema.entity.data.table import Table
 from metadata.generated.schema.api.lineage.addLineage import AddLineageRequest
 from metadata.generated.schema.type.entityLineage import (
@@ -57,16 +56,37 @@ def find_database_schema():
 
 t_tables = find_database_schema()['data'][0]['fullyQualifiedName']+'.'+t_tables[0]
 s_table_info = {}
-t_table_info = connectOM.get_by_name(Table, t_tables, fields=['*'])#requests.get(f'http://192.168.1.45:8585/api/v1/tables/name/{t_tables}', headers={'Authorization': f'Bearer {bearer_token}'}).json()
+t_table_info = connectOM.get_by_name(Table, t_tables, fields=['id'])#requests.get(f'http://192.168.1.45:8585/api/v1/tables/name/{t_tables}', headers={'Authorization': f'Bearer {bearer_token}'}).json()
 
 for source_table in s_tables:
     source_table = find_database_schema()['data'][0]['fullyQualifiedName'] + '.' + source_table
     s_table_info[source_table] = connectOM.get_by_name(Table, source_table, fields=['*']) #requests.get(f'http://192.168.1.45:8585/api/v1/tables/name/{source_table}', headers={'Authorization': f'Bearer {bearer_token}'}, params={'fqn': source_table}).json()
+
+    from_entity_ref = {
+        "id": s_table_info[source_table].id.root,  # Chuyển UUID thành string
+        "type": "table"  # Dùng "table" thay vì "Table" (kiểm tra schema xem đúng không)
+    }
+
+    to_entity_ref = {
+        "id": t_table_info.id.root,  # Chuyển UUID thành string
+        "type": "table"
+    }
+
     add_lineage_request = AddLineageRequest(
         edge=EntitiesEdge(
             description=f'{source_table} -> {t_tables}',
-            fromEntity=EntityReference(id=s_table_info[source_table]['Table']['id']['root'], type='Table'),
-            toEntity=EntityReference(id=t_table_info['Table']['id']['root'], type='Table'),
+            fromEntity=from_entity_ref,
+            toEntity=to_entity_ref,
         )
     )
+
+    # add_lineage_request = AddLineageRequest(
+    #     edge=EntitiesEdge(
+    #         description=f'{source_table} -> {t_tables}',
+    #         fromEntity=EntityReference(id=str(s_table_info[source_table].id.root), type='table'),
+    #         toEntity=EntityReference(id=str(t_table_info.id.root), type='table'),
+    #     )
+    # )
+
+
     created_lineage = connectOM.add_lineage(add_lineage_request)

@@ -1,17 +1,10 @@
-import oracledb
+from connect_oracle import connection
 from google import genai
-from dotenv import load_dotenv
 import os
 import json
 
-load_dotenv() #load from .env
-oracle_username = os.getenv("ORACLE_USERNAME")
-service_name = os.getenv("ORACLE_SERVICENAME")
-oracle_password = os.getenv("ORACLE_PASSWORD")
 gemini_api_key = os.getenv("GEMINI_API_KEY")
 
-#connect to oracle
-connection = oracledb.connect(user=oracle_username, password=oracle_password, host='192.168.1.200', port=1525, service_name=service_name)
 cursor = connection.cursor()
 query_statement = """
     SELECT TEXT
@@ -25,6 +18,7 @@ cursor.execute(query_statement)
 query_result = cursor.fetchall()
 procedure_lines = [line[0] for line in query_result]
 raw_sql = ''.join(procedure_lines)
+cursor.close()
 
 s_tables = []
 t_tables = []
@@ -42,5 +36,12 @@ parsed_response = json.loads(cleaned_response)
 # Gán vào biến
 s_tables = parsed_response.get("source_tables", [])
 t_tables = parsed_response.get("target_tables", [])
-# print(type(s_tables))
-# print(type(t_tables))
+
+schema_cursor = connection.cursor()
+schema_query_statement = """SELECT SYS_CONTEXT('USERENV', 'CURRENT_SCHEMA') FROM DUAL"""
+
+schema_cursor.execute(schema_query_statement)
+schema_query = schema_cursor.fetchall()
+
+
+

@@ -1,14 +1,6 @@
 from metadata.ingestion.ometa.ometa_api import OpenMetadata
 from metadata.generated.schema.entity.services.connections.metadata.openMetadataConnection import (OpenMetadataConnection, AuthProvider)
 from metadata.generated.schema.security.client.openMetadataJWTClientConfig import OpenMetadataJWTClientConfig
-from metadata.generated.schema.api.services.createDatabaseService import CreateDatabaseServiceRequest
-from metadata.generated.schema.entity.services.databaseService import (
-    DatabaseService, DatabaseServiceType, DatabaseConnection
-)
-from metadata.generated.schema.entity.services.connections.database.oracleConnection import (
-    OracleConnection, OracleServiceName
-)
-from metadata.ingestion.ometa.mixins.lineage_mixin import OMetaLineageMixin
 
 server_config = OpenMetadataConnection(
     hostPort="http://192.168.1.45:8585/api",
@@ -20,23 +12,4 @@ server_config = OpenMetadataConnection(
 
 connectOM = OpenMetadata(server_config)
 
-# db_info = metadata.get_by_name(DatabaseService, "inda_db2", fields=['*']) #trying get db info by name
-# # print(db_info)
-# # try add lineage by available mixins
-# db_service = DatabaseService(
-#     id=db_info.id
-#     name=db_info.name,
-#     serviceType=DatabaseServiceType.Oracle
-# )
-#
-# metadata.add_lineage_by_query(
-#     database_service=db_service,
-#     sql="""
-#     INSERT INTO TEST_QMINH (countriesId, countriesName,regionId)
-#     SELECT COUNTRY_ID, COUNTRY_NAME, REGION_ID
-#     FROM INDA1.COUNTRIES;
-# """,
-#     database_name='inda_db2.default',
-#     schema_name="inda_db2.default.inda1",
-#     timeout=10
-# )
+
